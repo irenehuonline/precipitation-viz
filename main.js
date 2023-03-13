@@ -34,7 +34,7 @@ function dataPreprocessor(row) {
 
 // 🌈 color palette
 //          feb         mar         apr         may     jun         jul         aug     sep         oct         nov     dec         jan         
-colors = ['#c81b8e', '#508484', '#F17300', '#707070', '#C39A32', '#D11149', '#96654d', '#af54cb', '#64a38f', '#a3d1c1', '#569dd8', '#054A91']
+colors = ['#ff56d0', '#2b5e5e', '#F17300', '#730000', '#C39A32', '#2a0140', '#82b504', '#b00404', '#64a38f', '#a3d1c1', '#569dd8', '#1f3b59']
 
 // 📝 global variable selected year
 selectedYear = 2015;
