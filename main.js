@@ -34,7 +34,7 @@ function dataPreprocessor(row) {
 
 // 🌈 color palette
 //          feb         mar         apr         may     jun         jul         aug     sep         oct         nov     dec         jan         
-colors = ['#c81b8e', '#508484', '#F17300','#707070', '#C39A32', '#D11149', '#96654d', '#af54cb', '#64a38f', '#a3d1c1','#569dd8', '#054A91']
+colors = ['#c81b8e', '#508484', '#F17300', '#707070', '#C39A32', '#D11149', '#96654d', '#af54cb', '#64a38f', '#a3d1c1', '#569dd8', '#054A91']
 
 // 📝 global variable selected year
 selectedYear = 2015;
@@ -76,7 +76,6 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
     //     return d.date.split("-")[0] == selectedYear;
     // });
 
-    console.log(weatherPoints);
 
     // ✅ find the max precipitation
     var maxPrecip = d3.max(weatherPoints, function (d) {
@@ -93,12 +92,12 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         }))
         .range([0, 2 * Math.PI]);
 
-    // ✅ yScale - for the graph radius
-    var yScale = d3.scaleRadial()
+    // ✅ axisScale - for the graph radius
+    var axisScale = d3.scaleRadial()
         .domain([0, maxPrecip])
         .range([innerRadius, outerRadius]);
 
-    // ✅ labelScale - for the graph labels
+    // ✅ labelScale - for the graph month labels
     var labelScale = d3.scaleBand()
         .domain(weatherPoints.map(function (d) {
             return d.month;
@@ -134,6 +133,40 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .style("font-size", "16px")
         .attr("alignment-baseline", "middle")
 
+    // 🌟 CREATING RADIAL AXIS
+    radialAxis = g => g
+        .attr('transform', 'translate(' + [svgWidth / 2, svgHeight / 2] + ')')
+        .attr("text-anchor", "middle")
+        .call(g => g.append("text")
+            .attr("y", d => -axisScale(axisScale.ticks(12).pop()))
+            .attr("dy", "-1em")
+            .text("Daily and Monthly Precipitation in Seattle: The Historical Average"))
+        .call(g => g.selectAll("g")
+            .data(function(d){
+                return axisScale.ticks(8).filter(function(d){
+                    return !(d > 0.1 && (d*100) % 3 != 0)
+                })
+
+            })
+            .join("g")
+            .attr("fill", "none")
+            .call(g => g.append("circle")
+                .attr("stroke", "gray")
+                .attr("stroke-opacity", 0.4)
+                .attr("r", axisScale))
+            .call(g => g.append("text")
+                .attr("y", d => -axisScale(d))
+                .attr("dy", "0.35em")
+                .attr("stroke", "#F2F5F5")
+                .attr("stroke-width", 2)
+                .text(axisScale.tickFormat())
+                .style("font-size", "12px")
+                .clone(true)
+                .attr("fill", "#000")
+                .attr("stroke", "none")))
+
+    svg.append("g")
+        .call(radialAxis);
 
     // 🌟🌟 CREATING THE GRAPH
     // CREATING THE MONTHLY AVERAGE GRAPH
@@ -149,7 +182,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .attr("d", d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(function (d) {
-                return yScale(d.monthly_historical_avg);
+                return axisScale(d.monthly_historical_avg);
             })
             .startAngle(function (d) {
                 return labelScale(d.month);
@@ -168,11 +201,11 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .attr("fill", function (d) {
             return colorPick(d.month)
         })
-        .attr('fill-opacity', '0.9')
+        .attr('fill-opacity', '0.75')
         .attr("d", d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(function (d) {
-                return yScale(d.average_precipitation_x);
+                return axisScale(d.average_precipitation_x);
             })
             .startAngle(function (d) {
                 return xScale(d.date);
