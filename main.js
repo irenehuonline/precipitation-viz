@@ -29,6 +29,17 @@ function dataPreprocessor(row) {
     }
 }
 
+function onChanged() {
+    var select = d3.select('#citySelect').node();
+    // Get current value of select element
+    var category = select.options[select.selectedIndex].value;
+    // Update chart with the selected category of letters
+    updateChart(category);
+}
+
+
+
+
 // 🌈 color palette
 //          feb         mar         apr         may     jun         jul         aug     sep         oct         nov     dec         jan         
 colors = ['#ff56d0', '#2b5e5e', '#F17300', '#730000', '#C39A32', '#2a0140', '#82b504', '#b00404', '#64a38f', '#a3d1c1', '#569dd8', '#1f3b59']
@@ -55,13 +66,13 @@ var chartG = svg.append('g').attr('transform', 'translate(' + [svgWidth / 2, svg
 // 🌟 write javascript below
 d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
     // all the precipitation data in the loaded dataset, with average for each month calculated.
-    weatherPoints = dataset
+    var initWeatherPoints = dataset
 
     // finding a datapoint for each unique month!
-    monthsText = new Set()
-    weatherMonths = weatherPoints.filter(function (d) {
-        if (!monthsText.has(d.month)) {
-            monthsText.add(d.month);
+    var initMonthsText = new Set()
+    var initWeatherMonths = initWeatherPoints.filter(function (d) {
+        if (!initMonthsText.has(d.month)) {
+            initMonthsText.add(d.month);
             return d;
         };
     })
@@ -74,7 +85,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
 
 
     // ✅ find the max precipitation
-    var maxPrecip = d3.max(weatherPoints, function (d) {
+    var maxPrecip = d3.max(initWeatherPoints, function (d) {
         // TO PRINT ALL PRECIPITATION DATA POINTS: console.log(d.average_precipitation_x);
         return d.average_precipitation_x;
     })
@@ -83,30 +94,30 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
 
     // ✅ xScale - for the graph bars
     xScale = d3.scaleBand()
-        .domain(weatherPoints.map(function (d) {
+        .domain(initWeatherPoints.map(function (d) {
             return d.date;
         }))
         .range([0, 2 * Math.PI]);
 
     // ✅ axisScale - for the graph radius
-    var axisScale = d3.scaleRadial()
+    axisScale = d3.scaleRadial()
         .domain([0, maxPrecip])
         .range([innerRadius, outerRadius]);
 
     // ✅ labelScale - for the graph month labels
-    var labelScale = d3.scaleBand()
-        .domain(weatherPoints.map(function (d) {
+    labelScale = d3.scaleBand()
+        .domain(initWeatherPoints.map(function (d) {
             return d.month;
         }))
         .range([0, 2 * Math.PI]);
     // ✅ colorPick - for dividing the graph by color
-    var colorPick = d3.scaleOrdinal().domain(weatherPoints)
+    colorPick = d3.scaleOrdinal().domain(initWeatherPoints)
         .range(colors);
 
 
-    // 🌟 LABELING THE GRAPH WITH MONTHS (using 'weatherMonths')
+    // 🌟 LABELING THE GRAPH WITH MONTHS (using 'initWeatherMonths')
     chartG.selectAll("g")
-        .data(weatherMonths)
+        .data(initWeatherMonths)
         .enter()
         .append("g")
 
@@ -138,9 +149,9 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
             .attr("dy", "-1em")
             .text("Daily and Monthly Precipitation in Seattle: The Historical Average"))
         .call(g => g.selectAll("g")
-            .data(function(d){
-                return axisScale.ticks(8).filter(function(d){
-                    return !(d > 0.1 && (d*100) % 3 != 0)
+            .data(function (d) {
+                return axisScale.ticks(8).filter(function (d) {
+                    return !(d > 0.1 && (d * 100) % 3 != 0)
                 })
 
             })
@@ -164,56 +175,92 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
     svg.append("g")
         .call(radialAxis);
 
-    // 🌟🌟 CREATING THE GRAPH
-    // CREATING THE MONTHLY AVERAGE GRAPH
-    chartG.selectAll("path")
-        .data(weatherMonths)
-        .enter()
-        .append("path")
-        .attr("fill", function (d) {
-            return colorPick(d.month)
-        })
-        .attr('fill-opacity', '0.4')
-
-        .attr("d", d3.arc()
-            .innerRadius(innerRadius)
-            .outerRadius(function (d) {
-                return axisScale(d.monthly_historical_avg);
-            })
-            .startAngle(function (d) {
-                return labelScale(d.month);
-            })
-            .endAngle(function (d) {
-                return labelScale(d.month) + labelScale.bandwidth();
-            })
-            .padAngle(0)
-            .padRadius(innerRadius))
-
-    // 🌟🌟 CREATING THE DAILY AVERAGE GRAPH
-    chartG.selectAll("path")
-        .data(weatherPoints)
-        .enter()
-        .append("path")
-        .attr("fill", function (d) {
-            return colorPick(d.month)
-        })
-        .attr('fill-opacity', '0.7')
-        .attr("d", d3.arc()
-            .innerRadius(innerRadius)
-            .outerRadius(function (d) {
-                return axisScale(d.average_precipitation_x);
-            })
-            .startAngle(function (d) {
-                return xScale(d.date);
-            })
-            .endAngle(function (d) {
-                return xScale(d.date) + xScale.bandwidth();
-            })
-            .padAngle(0.0075)
-            .padRadius(innerRadius))
-
+    updateChart('new_KSEA.csv');
 
 });
+
+// FUNCTION TO UPDATE CHART
+function updateChart(csvString) {
+    console.log('updateChart: ' + csvString);
+    d3.csv(csvString, dataPreprocessor).then(function(dataset) {
+        weatherPoints = dataset;
+
+
+        // ✅ FIND A DATAPOINT FOR EACH MONTH
+        monthsText = new Set();
+        weatherMonths = weatherPoints.filter(function (d) {
+            if (!monthsText.has(d.month)) {
+                monthsText.add(d.month);
+                return d;
+            };
+        })
+        console.log(weatherMonths);
+        console.log(weatherPoints);
+
+        //  CREATING THE GRAPH
+        //  🥚 CREATING THE MONTHLY AVERAGE GRAPH
+
+        //  🌟 CREATING BARS       
+        bars1 = chartG.selectAll("path")
+            .data(weatherMonths)
+
+        //  🌟 ENTER SELECTION AND APPEND NEW GROUPS
+        bars1.enter()
+            .append("path")
+            .attr('class', 'bar')
+            .attr("fill", function (d) {
+                console.log('bars filled')
+                return colorPick(d.month)
+            })
+            .attr('fill-opacity', '0.4')
+
+            .attr("d", d3.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(function (d) {
+                    return axisScale(d.monthly_historical_avg);
+                })
+                .startAngle(function (d) {
+                    return labelScale(d.month);
+                })
+                .endAngle(function (d) {
+                    return labelScale(d.month) + labelScale.bandwidth();
+                })
+                .padAngle(0)
+                .padRadius(innerRadius))
+
+            bars1.exit().remove()
+
+        //  🥚 CREATING THE DAILY AVERAGE GRAPH
+        bars2 = chartG.selectAll("path")
+            .data(weatherPoints)
+
+
+        bars2.enter()
+            .append("path")
+            .attr("fill", function (d) {
+                console.log('bars filled: 2')
+                return colorPick(d.month)
+            })
+            .attr('fill-opacity', '0.7')
+            .attr("d", d3.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(function (d) {
+                    return axisScale(d.average_precipitation_x);
+                })
+                .startAngle(function (d) {
+                    return xScale(d.date);
+                })
+                .endAngle(function (d) {
+                    return xScale(d.date) + xScale.bandwidth();
+                })
+                .padAngle(0.0075)
+                .padRadius(innerRadius))
+            
+            bars2.exit().remove()
+
+    })
+
+}
     // 📝 TO-DO LIST
     // find a good size for the doughnut chart?
     // set 12 different even sections - label by month
