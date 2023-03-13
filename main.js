@@ -34,11 +34,11 @@ function onChanged() {
     // Get current value of select element
     var category = select.options[select.selectedIndex].value;
     // Update chart with the selected category of letters
+
     updateChart(category);
+    updateChart(category);
+
 }
-
-
-
 
 // 🌈 color palette
 //          feb         mar         apr         may     jun         jul         aug     sep         oct         nov     dec         jan         
@@ -60,7 +60,6 @@ var outerRadius = Math.min(svgWidth, svgHeight) / 2.25;
 // 📝 please remember to append any graph elements to chartG!
 //      chartG appended to svg above.
 var chartG = svg.append('g').attr('transform', 'translate(' + [svgWidth / 2, svgHeight / 2] + ')')
-
 
 
 // 🌟 write javascript below
@@ -182,7 +181,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
 // FUNCTION TO UPDATE CHART
 function updateChart(csvString) {
     console.log('updateChart: ' + csvString);
-    d3.csv(csvString, dataPreprocessor).then(function(dataset) {
+    d3.csv(csvString, dataPreprocessor).then(function (dataset) {
         weatherPoints = dataset;
 
         // ✅ FIND A DATAPOINT FOR EACH MONTH
@@ -195,21 +194,19 @@ function updateChart(csvString) {
         })
         console.log(weatherMonths)
 
-        //  CREATING THE GRAPH
+
         //  🥚 CREATING THE MONTHLY AVERAGE GRAPH
 
         //      🌟 CREATING BARS       
-        var monthBars = chartG.selectAll("monthBars").data(weatherMonths)
-        
+        monthBars = chartG.selectAll(".monthBars").data(weatherMonths)
+
         //      🌟 ENTER SELECTION
-        monthBars.enter()
-            .append("path")
+        enterMonthBars = monthBars.enter()
+            .append('g')
             .attr('class', 'monthBars')
-            .attr("fill", function (d) {
-                console.log('bars filled')
-                return colorPick(d.month)
-            })
-            .attr('fill-opacity', '0.4')
+
+        enterMonthBars.merge(monthBars)
+            .append("path")
             .attr("d", d3.arc()
                 .innerRadius(innerRadius)
                 .outerRadius(function (d) {
@@ -223,39 +220,51 @@ function updateChart(csvString) {
                 })
                 .padAngle(0)
                 .padRadius(innerRadius))
+
+        enterMonthBars
+            .attr("fill", function (d) {
+                return colorPick(d.month)
+            })
+            .attr('fill-opacity', '0.4')
+
+
         //      🌟 EXIT SELECTION
-            monthBars.exit();
+        monthBars.remove().exit();
 
         //  🥚 CREATING THE DAILY AVERAGE GRAPH
         //      🌟 CREATING BARS
-        var dayBars = chartG.selectAll("dayBars")
-            .data(weatherPoints)
+        dayBars = chartG.selectAll(".dayBars").data(weatherPoints)
 
         //      🌟 ENTER SELECTION
-        dayBars.enter()
-            .append("path")
+        enterDayBars = dayBars.enter()
+            .append('g')
             .attr('class', 'dayBars')
-            .attr("fill", function (d) {
-                console.log('bars filled: 2')
+
+        enterDayBars.merge(dayBars)
+            .append("path")
+            .attr("d", d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(function (d) {
+                return axisScale(d.average_precipitation_x);
+            })
+            .startAngle(function (d) {
+                return xScale(d.date);
+            })
+            .endAngle(function (d) {
+                return xScale(d.date) + xScale.bandwidth();
+            })
+            .padAngle(0.0075)
+            .padRadius(innerRadius))
+
+        enterDayBars.attr("fill", function (d) {
                 return colorPick(d.month)
             })
             .attr('fill-opacity', '0.7')
-            .attr("d", d3.arc()
-                .innerRadius(innerRadius)
-                .outerRadius(function (d) {
-                    return axisScale(d.average_precipitation_x);
-                })
-                .startAngle(function (d) {
-                    return xScale(d.date);
-                })
-                .endAngle(function (d) {
-                    return xScale(d.date) + xScale.bandwidth();
-                })
-                .padAngle(0.0075)
-                .padRadius(innerRadius))
-            
-            //      🌟 EXIT SELECTION
-            dayBars.exit();
+
+
+
+        //      🌟 EXIT SELECTION
+        dayBars.remove().exit();
 
     })
 
