@@ -16,15 +16,12 @@ function dataPreprocessor(row) {
         date: row.date,
         month: months[row.date.split("-")[1]],
         year: row.date.split("-")[0],
-        // actual_mean_temp
-        // actual_min_temp
-        // actual_max_temp
-        // average_min_temp
-        // average_max_temp
-        // record_min_temp
-        // record_max_temp
-        // record_min_temp_year
-        // record_max_temp_year
+
+        // .CSV has but doesn't take into account: 
+        // actual_mean_temp | actual_min_temp | actual_max_temp
+        // average_min_temp | average_max_temp
+        // record_min_temp | record_max_temp
+        // record_min_temp_year | record_max_temp_year
         actual_precipitation: row.actual_precipitation,
         average_precipitation_x: row.average_precipitation_x,
         record_precipitation: row.record_precipitation,
@@ -43,7 +40,6 @@ selectedYear = 2015;
 var svg = d3.select('svg');
 
 // 📝 gets svg element layout parameters from the HTML
-// 🟥 add padding! reference lab 5
 var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
 
@@ -152,7 +148,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
             .attr("fill", "none")
             .call(g => g.append("circle")
                 .attr("stroke", "gray")
-                .attr("stroke-opacity", 0.4)
+                .attr("stroke-opacity", 0.5)
                 .attr("r", axisScale))
             .call(g => g.append("text")
                 .attr("y", d => -axisScale(d))
@@ -201,7 +197,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .attr("fill", function (d) {
             return colorPick(d.month)
         })
-        .attr('fill-opacity', '0.75')
+        .attr('fill-opacity', '0.7')
         .attr("d", d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(function (d) {

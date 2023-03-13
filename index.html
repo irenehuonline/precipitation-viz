@@ -14,9 +14,18 @@
 <body>
     <div id="main">
         <h1 class="text-uppercase text-center p-1">🌧🌧🌧</h1>
-        <svg width="900" height="900" class="border"></svg>
-
-
+        <container class="d-flex">
+            <div class="flex px-5 py-3">        
+                <svg width="900" height="900" class="border"></svg>
+            </div>
+            <div class="flex px-5 py-3">        
+                <label for="categorySelect">Data For:</label>
+                <select class="custom-select" id="categorySelect" onchange="onChanged()">
+                    <option selected value="seattle">Seattle</option>
+                    <option value="houston">Houston</option>
+                    <option value="city-3">City 3</option>
+                </select>
+            </div>
     </div>
 </body>
 
