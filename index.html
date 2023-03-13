@@ -13,17 +13,25 @@
 </head>
 <body>
     <div id="main">
-        <h1 class="text-uppercase text-center p-1">🌧🌧🌧</h1>
+        <h1 class="text-center p-2">Daily and Monthly Precipitation: the Historical Average (inches)</h1>
         <container class="d-flex">
             <div class="flex px-5 py-3">        
-                <svg width="900" height="850" class="border"></svg>
+                <svg width="800" height="750" class="border"></svg>
             </div>
             <div class="flex px-5 py-3">        
                 <label for="categorySelect">Data For:</label>
                 <select class="custom-select" id="citySelect" onchange="onChanged()">
-                    <option selected value="new_KSEA.csv">Seattle</option>
-                    <option value="new_KHOU.csv">Houston</option>
-                    <option value="new_KNYC.csv">NYC</option>
+                    <option selected value="new_KSEA.csv">Seattle, Washington</option>
+                    <option value="new_CLT.csv">Charlotte, North Carolina</option>
+                    <option value="new_CQT.csv">Los Angeles, California</option>
+                    <option value="new_IND.csv">Indianapolis, Indiana</option>
+                    <option value="new_JAX.csv">Jacksonville, Florida</option>
+                    <option value="new_MDW.csv">Chicago, Illinois</option>
+                    <option value="new_PHL.csv">Philadelphia, Pennsylvania</option>
+                    <option value="new_PHX.csv">Phoenix, Arizona</option>
+                    <option value="new_KHOU.csv">Houston, Texas</option>
+                    <option value="new_KNYC.csv">New York, New York</option>
+
                 </select>
             </div>
     </div>

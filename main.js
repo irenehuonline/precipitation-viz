@@ -1,6 +1,16 @@
 // irene hu
 // info-474
 // this is the main js file for the precipitation viz.
+function onChanged() {
+    var select = d3.select('#citySelect').node();
+    // Get current value of select element
+    var category = select.options[select.selectedIndex].value;
+    // Update chart with the selected category of letters
+
+    updateChart(category);
+    updateChart(category);
+
+}
 
 function dataPreprocessor(row) {
     var months = {
@@ -27,17 +37,6 @@ function dataPreprocessor(row) {
         record_precipitation: row.record_precipitation,
         monthly_historical_avg: row.average_precipitation_y
     }
-}
-
-function onChanged() {
-    var select = d3.select('#citySelect').node();
-    // Get current value of select element
-    var category = select.options[select.selectedIndex].value;
-    // Update chart with the selected category of letters
-
-    updateChart(category);
-    updateChart(category);
-
 }
 
 // 🌈 color palette

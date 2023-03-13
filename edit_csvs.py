@@ -4,7 +4,7 @@ def download_csvs():
     """
     Downloads the csv for weather data for a specific city. returns as df
     """
-    city = pd.read_csv('Weather Data\PHX.csv')
+    city = pd.read_csv('Weather Data\PHL.csv')
     return city
 
 def edit_df(city):
@@ -31,4 +31,4 @@ mergedCity = pd.merge(city, city.groupby('num_month')['average_precipitation'].m
 
 print(mergedCity)
 
-mergedCity.to_csv('new_PHX.csv')
+mergedCity.to_csv('new_PHL.csv')
