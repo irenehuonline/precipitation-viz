@@ -34,7 +34,7 @@ function dataPreprocessor(row) {
 
 // 🌈 color palette
 //          feb         mar         apr         may     jun         jul         aug     sep         oct         nov     dec         jan         
-colors = ['#c81b8e', '#508484', '#F17300', '#707070', '#C39A32', '#D11149', '#96654d', '#af54cb', '#64a38f', '#a3d1c1', '#569dd8', '#054A91']
+colors = ['#c81b8e', '#508484', '#F17300','#707070', '#C39A32', '#D11149', '#96654d', '#af54cb', '#64a38f', '#a3d1c1','#569dd8', '#054A91']
 
 // 📝 global variable selected year
 selectedYear = 2015;
@@ -110,7 +110,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
 
 
     // 🌟 LABELING THE GRAPH WITH MONTHS (using 'weatherMonths')
-    (chartG.selectAll("g")
+    chartG.selectAll("g")
         .data(weatherMonths)
         .enter()
         .append("g")
@@ -133,33 +133,32 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         })
         .style("font-size", "16px")
         .attr("alignment-baseline", "middle")
-    )
 
-        // 🌟🌟 CREATING THE GRAPH
-        // CREATING THE MONTHLY AVERAGE GRAPH
-        (chartG.selectAll("path")
-            .data(weatherMonths)
-            .enter()
-            .append("path")
-            .attr("fill", function (d) {
-                return colorPick(d.month)
+
+    // 🌟🌟 CREATING THE GRAPH
+    // CREATING THE MONTHLY AVERAGE GRAPH
+    chartG.selectAll("path")
+        .data(weatherMonths)
+        .enter()
+        .append("path")
+        .attr("fill", function (d) {
+            return colorPick(d.month)
+        })
+        .attr('fill-opacity', '0.4')
+
+        .attr("d", d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(function (d) {
+                return yScale(d.monthly_historical_avg);
             })
-            .attr('fill-opacity', '0.4')
-
-            .attr("d", d3.arc()
-                .innerRadius(innerRadius)
-                .outerRadius(function (d) {
-                    return yScale(d.monthly_historical_avg);
-                })
-                .startAngle(function (d) {
-                    return labelScale(d.month);
-                })
-                .endAngle(function (d) {
-                    return labelScale(d.month) + labelScale.bandwidth();
-                })
-                .padAngle(0)
-                .padRadius(innerRadius))
-        )
+            .startAngle(function (d) {
+                return labelScale(d.month);
+            })
+            .endAngle(function (d) {
+                return labelScale(d.month) + labelScale.bandwidth();
+            })
+            .padAngle(0)
+            .padRadius(innerRadius))
 
     // 🌟🌟 CREATING THE DAILY AVERAGE GRAPH
     chartG.selectAll("path")
