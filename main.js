@@ -147,7 +147,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .call(g => g.append("text")
             .attr("y", d => -axisScale(axisScale.ticks(12).pop()))
             .attr("dy", "-1em")
-            .text("Daily and Monthly Precipitation in Seattle: The Historical Average"))
+            .text("Daily and Monthly Precipitation: the Historical Average"))
         .call(g => g.selectAll("g")
             .data(function (d) {
                 return axisScale.ticks(8).filter(function (d) {
@@ -185,7 +185,6 @@ function updateChart(csvString) {
     d3.csv(csvString, dataPreprocessor).then(function(dataset) {
         weatherPoints = dataset;
 
-
         // ✅ FIND A DATAPOINT FOR EACH MONTH
         monthsText = new Set();
         weatherMonths = weatherPoints.filter(function (d) {
@@ -194,26 +193,23 @@ function updateChart(csvString) {
                 return d;
             };
         })
-        console.log(weatherMonths);
-        console.log(weatherPoints);
+        console.log(weatherMonths)
 
         //  CREATING THE GRAPH
         //  🥚 CREATING THE MONTHLY AVERAGE GRAPH
 
-        //  🌟 CREATING BARS       
-        bars1 = chartG.selectAll("path")
-            .data(weatherMonths)
-
-        //  🌟 ENTER SELECTION AND APPEND NEW GROUPS
-        bars1.enter()
+        //      🌟 CREATING BARS       
+        var monthBars = chartG.selectAll("monthBars").data(weatherMonths)
+        
+        //      🌟 ENTER SELECTION
+        monthBars.enter()
             .append("path")
-            .attr('class', 'bar')
+            .attr('class', 'monthBars')
             .attr("fill", function (d) {
                 console.log('bars filled')
                 return colorPick(d.month)
             })
             .attr('fill-opacity', '0.4')
-
             .attr("d", d3.arc()
                 .innerRadius(innerRadius)
                 .outerRadius(function (d) {
@@ -227,16 +223,18 @@ function updateChart(csvString) {
                 })
                 .padAngle(0)
                 .padRadius(innerRadius))
-
-            bars1.exit().remove()
+        //      🌟 EXIT SELECTION
+            monthBars.exit();
 
         //  🥚 CREATING THE DAILY AVERAGE GRAPH
-        bars2 = chartG.selectAll("path")
+        //      🌟 CREATING BARS
+        var dayBars = chartG.selectAll("dayBars")
             .data(weatherPoints)
 
-
-        bars2.enter()
+        //      🌟 ENTER SELECTION
+        dayBars.enter()
             .append("path")
+            .attr('class', 'dayBars')
             .attr("fill", function (d) {
                 console.log('bars filled: 2')
                 return colorPick(d.month)
@@ -256,13 +254,11 @@ function updateChart(csvString) {
                 .padAngle(0.0075)
                 .padRadius(innerRadius))
             
-            bars2.exit().remove()
+            //      🌟 EXIT SELECTION
+            dayBars.exit();
 
     })
 
 }
     // 📝 TO-DO LIST
-    // find a good size for the doughnut chart?
-    // set 12 different even sections - label by month
-    // find the maximum value in the dataset - darkest shade of blue.
-    // minimum value set to 0                   - set to white
+    // fix exit selection
