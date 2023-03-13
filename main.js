@@ -3,12 +3,12 @@
 // this is the main js file for the precipitation viz.
 
 function dataPreprocessor(row) {
-    const months = {
-        1:  'JAN', 2:  'FEB',
-        3:  'MAR', 4:  'APR',
-        5:  'MAY', 6:  'JUN',
-        7:  'JUL', 8:  'AUG',
-        9:  'SEP', 10: 'OCT',
+    var months = {
+        1: 'JAN', 2: 'FEB',
+        3: 'MAR', 4: 'APR',
+        5: 'MAY', 6: 'JUN',
+        7: 'JUL', 8: 'AUG',
+        9: 'SEP', 10: 'OCT',
         11: 'NOV', 12: 'DEC'
     }
 
@@ -26,8 +26,9 @@ function dataPreprocessor(row) {
         // record_min_temp_year
         // record_max_temp_year
         actual_precipitation: row.actual_precipitation,
-        average_precipitation: row.average_precipitation,
-        record_precipitation: row.record_precipitation
+        average_precipitation_x: row.average_precipitation_x,
+        record_precipitation: row.record_precipitation,
+        monthly_historical_avg: row.average_precipitation_y
     }
 }
 
@@ -42,20 +43,30 @@ var svg = d3.select('svg');
 var svgWidth = +svg.attr('width');
 var svgHeight = +svg.attr('height');
 
-var innerRadius = 80;
-var outerRadius = Math.min(svgWidth, svgHeight) / 2;
+var innerRadius = svgWidth / 6;
+var outerRadius = Math.min(svgWidth, svgHeight) / 2.25;
 
 // 📝 please remember to append any graph elements to chartG!
 //      chartG appended to svg above.
-var chartG = svg.append('g').attr('transform', 'translate(' + [svgWidth/ 2, svgHeight / 2] + ')')
+var chartG = svg.append('g').attr('transform', 'translate(' + [svgWidth / 2, svgHeight / 2] + ')')
 
 
 
 // 🌟 write javascript below
-d3.csv('Weather Data/KSEA.csv', dataPreprocessor).then(function(dataset){
-    
-    // ✅ filtering the dataset - if selectedYear == the date in the dataset
+d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
+    // all the precipitation data in the loaded dataset, with average for each month calculated.
     weatherPoints = dataset
+
+    // finding a datapoint for each unique month!
+    monthsText = new Set()
+    weatherMonths = weatherPoints.filter(function (d) {
+        if (!monthsText.has(d.month)) {
+            monthsText.add(d.month);
+            return d;
+        };
+    })
+
+
     // .filter(function(d) {
     //     // TO PRINT ALL YEAR DATA POINTS: console.log(d.date.split("-")[0]);
     //     return d.date.split("-")[0] == selectedYear;
@@ -64,71 +75,112 @@ d3.csv('Weather Data/KSEA.csv', dataPreprocessor).then(function(dataset){
     console.log(weatherPoints);
 
     // ✅ find the max precipitation
-    var maxPrecip = d3.max(weatherPoints, function(d){
-        // TO PRINT ALL PRECIPITATION DATA POINTS: console.log(d.average_precipitation);
-        return d.average_precipitation;
+    var maxPrecip = d3.max(weatherPoints, function (d) {
+        // TO PRINT ALL PRECIPITATION DATA POINTS: console.log(d.average_precipitation_x);
+        return d.average_precipitation_x;
     })
 
     console.log("maxPrecip: " + maxPrecip);
 
-    // ✅ xScale
+    // ✅ xScale - for the graph bars
     xScale = d3.scaleBand()
-                .domain(weatherPoints.map(function(d){
-                    return d.date;
-                }))
-                .range([0, 2 * Math.PI]);
-    // ✅ yScale
+        .domain(weatherPoints.map(function (d) {
+            return d.date;
+        }))
+        .range([0, 2 * Math.PI]);
+
+    // ✅ yScale - for the graph radius
     var yScale = d3.scaleRadial()
-                .domain([0, maxPrecip])
-                .range([innerRadius, outerRadius]);
-    // ✅ gradientScale 
-    var gradientScale = d3.scaleLinear()
-                        .domain([0, maxPrecip])
-                        .range([1, 0.25])
-                        
-    
-   
-    // CREATING THE GRAPH FR
-    chartG.selectAll("path")
-    .data(weatherPoints)
-    .enter()
-    .append("path")
-      .attr("fill", "blue")
-      .attr('fill-opacity', function(d){
-        return gradientScale(d.average_precipitation)
-      })
-      .attr("d", d3.arc()
-          .innerRadius(innerRadius)
-          .outerRadius(function(d) { return yScale(d.average_precipitation); })
-          .startAngle(function(d) { return xScale(d.date); })
-          .endAngle(function(d) { return xScale(d.date) + xScale.bandwidth(); })
-          .padAngle(0.01)
-          .padRadius(innerRadius))
+        .domain([0, maxPrecip])
+        .range([innerRadius, outerRadius]);
+
+    // ✅ labelScale - for the graph labels
+    var labelScale = d3.scaleBand()
+        .domain(weatherPoints.map(function (d) {
+            return d.month;
+        }))
+        .range([0, 2 * Math.PI]);
+    // ✅ colorPick - for dividing the graph by color
+    var colorPick = d3.scaleOrdinal().domain(weatherPoints)
+        .range(d3.schemeSet3);
 
 
+    // 🌟 LABELING THE GRAPH WITH MONTHS (using 'weatherMonths')
     chartG.selectAll("g")
-          .data(weatherPoints)
-          .enter()
-          .append("g")
-            .attr("text-anchor", function(d) { 
-                return (xScale(d.date) + xScale.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start"; 
-            })
-            .attr("transform", function(d) { 
-                return "rotate(" + ((xScale(d.date) + xScale.bandwidth() / 2) * 180 / Math.PI - 90) + ")"+"translate(" + (yScale(d.average_precipitation)+ 5) + ",0)"; 
-            })
-            .append("text")
-            .text(function(d){
-                return(d.month)
-            })
-            .attr("transform", function(d) { 
-                return (xScale(d.date) + xScale.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)"; 
-            })
-            .style("font-size", "3px")
-            .attr("alignment-baseline", "middle")
-    });
+        .data(weatherMonths)
+        .enter()
+        .append("g")
+
+        .attr("text-anchor", function (d) {
+            return (labelScale(d.month) + labelScale.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start";
+        })
+        .attr("transform", function (d) {
+            return "rotate(" + ((labelScale(d.month) + labelScale.bandwidth() / 2) * 180 / Math.PI - 90) + ")" +
+                "translate(" + (Math.min(svgWidth, svgHeight) / 8) + ",0)";
+        })
+        .append("text")
+        .text(function (d) {
+            return d.month;
+        })
+        // transforming text using labelScale
+        .attr("transform", function (d) {
+            return (labelScale(d.month) + labelScale.bandwidth() / 2 + Math.PI) %
+                (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)";
+        })
+        .style("font-size", "16px")
+        .attr("alignment-baseline", "middle")
 
 
+    // 🌟🌟 CREATING THE GRAPH
+    // CREATING THE MONTHLY AVERAGE GRAPH
+    chartG.selectAll("path")
+        .data(weatherMonths)
+        .enter()
+        .append("path")
+        .attr("fill", function (d) {
+            return colorPick(d.month)
+        })
+        .attr('fill-opacity', '0.5')
 
+        .attr("d", d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(function (d) {
+                return yScale(d.monthly_historical_avg);
+            })
+            .startAngle(function (d) {
+                return labelScale(d.month);
+            })
+            .endAngle(function (d) {
+                return labelScale(d.month) + labelScale.bandwidth();
+            })
+            .padAngle(0)
+            .padRadius(innerRadius))
+
+    // 🌟🌟 CREATING THE DAILY AVERAGE GRAPH
+    chartG.selectAll("path")
+        .data(weatherPoints)
+        .enter()
+        .append("path")
+        .attr("fill", function (d) {
+            return colorPick(d.month)
+        })
+        .attr('fill-opacity', '0.5')
+        .attr("d", d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(function (d) {
+                return yScale(d.average_precipitation_x);
+            })
+            .startAngle(function (d) {
+                return xScale(d.date);
+            })
+            .endAngle(function (d) {
+                return xScale(d.date) + xScale.bandwidth();
+            })
+            .padAngle(0.01)
+            .padRadius(innerRadius))
+
+
+});
     // 📝 TO-DO LIST
     // find a good size for the doughnut chart?
     // set 12 different even sections - label by month
