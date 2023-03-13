@@ -146,7 +146,7 @@ d3.csv('new_KSEA.csv', dataPreprocessor).then(function (dataset) {
         .call(g => g.append("text")
             .attr("y", d => -axisScale(axisScale.ticks(12).pop()))
             .attr("dy", "-1em")
-            .text("Daily and Monthly Precipitation: the Historical Average"))
+            .text("Daily and Monthly Precipitation: the Historical Average (inches)"))
         .call(g => g.selectAll("g")
             .data(function (d) {
                 return axisScale.ticks(8).filter(function (d) {
@@ -270,4 +270,6 @@ function updateChart(csvString) {
 
 }
     // 📝 TO-DO LIST
-    // fix exit selection
+    // add more data sets into the list, parsing data using python
+    // explore possibility of side-by-side visualizations
+    // write-up 3 pages
