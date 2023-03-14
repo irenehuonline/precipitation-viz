@@ -224,7 +224,7 @@ function updateChart(csvString) {
             .attr("fill", function (d) {
                 return colorPick(d.month)
             })
-            .attr('fill-opacity', '0.4')
+            .attr('fill-opacity', '0.35')
 
 
         //      🌟 EXIT SELECTION
